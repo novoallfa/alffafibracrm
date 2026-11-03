@@ -660,6 +660,7 @@ function TableView({
                     <PlanSelect
                       value={lead.planId ?? ""}
                       plans={plans}
+                      historicalName={lead.planName ?? lead.plan?.name}
                       onChange={(planId) => onUpdate(lead.id, buildPlanPayload(planId, plans))}
                     />
                   </td>
@@ -825,7 +826,7 @@ function LeadCard({
           fallbackStatus={lead.status}
           onChange={(kanbanStageId) => onUpdate(lead.id, { kanbanStageId })}
         />
-        <PlanSelect value={lead.planId ?? ""} plans={plans} onChange={(planId) => onUpdate(lead.id, buildPlanPayload(planId, plans))} />
+        <PlanSelect value={lead.planId ?? ""} plans={plans} historicalName={lead.planName ?? lead.plan?.name} onChange={(planId) => onUpdate(lead.id, buildPlanPayload(planId, plans))} />
         <UserSelect
           value={lead.assignedUserId ?? ""}
           users={users}
@@ -966,7 +967,7 @@ function LeadFields({
           name="planId"
           defaultValue={lead?.planId ?? ""}
         >
-          <option value="">Plano</option>
+          <option value="">{lead?.planName ?? "Plano"}</option>
           {plans.map((plan) => (
             <option key={plan.id} value={plan.id}>
               {plan.name} - {plan.speed}
@@ -1165,10 +1166,12 @@ function StatusSelect({ value, onChange }: { value: LeadStatus; onChange: (value
 function PlanSelect({
   value,
   plans,
+  historicalName,
   onChange,
 }: {
   value: string;
   plans: PlanOption[];
+  historicalName?: string | null;
   onChange: (value: string) => void;
 }) {
   return (
@@ -1177,7 +1180,10 @@ function PlanSelect({
       value={value}
       onChange={(event) => onChange(event.target.value)}
     >
-      <option value="">Sem plano</option>
+      <option value="">{!value && historicalName ? historicalName : "Sem plano"}</option>
+      {value && !plans.some((plan) => plan.id === value) && historicalName && (
+        <option value={value}>{historicalName}</option>
+      )}
       {plans.map((plan) => (
         <option key={plan.id} value={plan.id}>
           {plan.name}
