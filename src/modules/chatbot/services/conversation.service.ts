@@ -541,10 +541,10 @@ function getNextFollowUpStep(memory: ConversationMemory, now: Date) {
   const currentStage = Number(memory.followUpStage ?? 0);
   const elapsedMs = now.getTime() - baseTime.getTime();
   const waitByStage = [
-    3 * 60_000,
-    5 * 60_000,
-    10 * 60_000,
-    3 * 60_000,
+    6 * 60 * 60_000,
+    6 * 60 * 60_000,
+    6 * 60 * 60_000,
+    6 * 60 * 60_000,
   ];
 
   const requiredMs = waitByStage[currentStage];
