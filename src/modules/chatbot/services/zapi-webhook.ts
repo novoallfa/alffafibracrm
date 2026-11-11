@@ -86,6 +86,15 @@ export async function handleZapiWebhook(request: Request, requiredAgentId?: stri
         return NextResponse.json(errorResponse("Agente indisponivel."), { status: 503 });
       }
       if (payload.instanceId !== agent.zapiInstanceId) {
+        await writeTechnicalLog({
+          level: "ERROR",
+          category: "webhook",
+          message: "Webhook recebido para instancia diferente da configurada para o agente.",
+          method: "POST",
+          endpoint: "/api/webhooks/zapi",
+          integration: "zapi",
+          metadata: { agentId: requiredAgentId, hasInstanceId: Boolean(payload.instanceId) },
+        });
         return NextResponse.json(errorResponse("Instancia incorreta."), { status: 403 });
       }
     }
@@ -118,6 +127,19 @@ export async function handleZapiWebhook(request: Request, requiredAgentId?: stri
     const incoming = await extractIncomingMessage(payload);
 
     if (!phone || !incoming.message) {
+      await writeTechnicalLog({
+        level: "ERROR",
+        category: "webhook",
+        message: "Webhook da Z-API sem remetente ou conteudo reconhecivel.",
+        method: "POST",
+        endpoint: "/api/webhooks/zapi",
+        integration: "zapi",
+        metadata: {
+          requiredAgentId: requiredAgentId ?? null,
+          hasPhone: Boolean(phone),
+          payloadKeys: Object.keys(payload).slice(0, 30),
+        },
+      });
       return NextResponse.json(errorResponse("Payload invalido.", "INVALID_WEBHOOK"), {
         status: 400,
       });
